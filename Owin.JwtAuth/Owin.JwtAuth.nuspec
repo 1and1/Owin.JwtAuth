@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>Owin.JwtAuth</id>
+		<version>$version$</version>
+		<authors>Bastian Eicher</authors>
+		<copyright>1&amp;1 Internet SE</copyright>
+		<projectUrl>https://github.com/1and1/Owin.JwtAuth</projectUrl>
+		<description>Owin.JwtAuth provides JSON Web Token authentication with X509 signing and configuration stored in App.config/Web.config.</description>
+		<summary>JSON Web Token authentication with X509 signing</summary>
+		<tags>OWIN JWT JSON Web Token authentication</tags>
+	</metadata>
+</package>
