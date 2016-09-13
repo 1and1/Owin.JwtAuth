@@ -29,6 +29,14 @@ NuGet package:
 
 
 
+## Certificate rollover
+
+The library tries to validate signatures using all currently valid certificates with a matching subject name found in the "Trusted People" store.
+
+To perform a graceful certificate rollover, e.g., in case of a certificate renewal: Import a new certificate with the same subject name before the old one expires. Then start using the new certificate to sign tokens.
+
+
+
 ## Sample project
 
 The source code includes a sample project that uses demonstrates the usage of Owin.JwtAuth. You can build and run it using Visual Studio 2015. By default the instance will be hosted by IIS Express at `http://localhost:4358/`.

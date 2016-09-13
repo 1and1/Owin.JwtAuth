@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security;
@@ -32,18 +34,18 @@ namespace Owin.JwtAuth
         {
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
-                app.CreateLogger("JwtAuth").WriteWarning("Certificate Store is only available on Windows. JWT Authentication not enabled.");
+                app.CreateLogger("Owin.JwtAuth").WriteWarning("Certificate Store is only available on Windows. JWT Authentication not enabled.");
                 return app;
             }
 
-            var certificate = CertificateLoader.BySubjectName(issuer);
-            if (certificate == null)
+            var certificates = CertificateLoader.BySubjectName(issuer);
+            if (certificates.Length == 0)
             {
-                app.CreateLogger("JwtAuth").WriteWarning("No certificate for {0} found in TrustedPeople store. JWT Authentication not enabled.", issuer);
+                app.CreateLogger("Owin.JwtAuth").WriteWarning("No certificate for {0} found in TrustedPeople store. JWT Authentication not enabled.", issuer);
                 return app;
             }
 
-            return app.UseJwtAuth(issuer, certificate, audience);
+            return app.UseJwtAuth(issuer, certificates, audience);
         }
 
         /// <summary>
@@ -51,18 +53,15 @@ namespace Owin.JwtAuth
         /// </summary>
         /// <param name="app">The application to configure.</param>
         /// <param name="issuer">The name of the service allowed to issue JSON Web Tokens for access to this service.</param>
-        /// <param name="certificate">The certificate used by the issuer to sign tokens.</param>
+        /// <param name="certificates">The possible certificates used by the issuer to sign tokens.</param>
         /// <param name="audience">The name of this service as used as an audience name in JSON Web Tokens.</param>
-        public static IAppBuilder UseJwtAuth(this IAppBuilder app, string issuer, X509Certificate2 certificate, string audience)
+        public static IAppBuilder UseJwtAuth(this IAppBuilder app, string issuer, IEnumerable<X509Certificate2> certificates, string audience)
         {
             return app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
             {
                 AuthenticationMode = AuthenticationMode.Active,
                 AllowedAudiences = new[] {audience},
-                IssuerSecurityTokenProviders = new[]
-                {
-                    new X509CertificateSecurityTokenProvider(issuer, certificate)
-                }
+                IssuerSecurityTokenProviders = certificates.Select(x => new X509CertificateSecurityTokenProvider(issuer, x))
             });
         }
     }

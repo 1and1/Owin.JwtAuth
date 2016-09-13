@@ -9,9 +9,9 @@ namespace Owin.JwtAuth
     public static class CertificateLoader
     {
         /// <summary>
-        /// Loads a certificate from the machine-wide "Trusted People" store, identified by the subject name.
+        /// Loads all currently valid certificates from the machine-wide "Trusted People" store that match the subject name.
         /// </summary>
-        public static X509Certificate2 BySubjectName(string subjectName)
+        public static X509Certificate2[] BySubjectName(string subjectName)
         {
             var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
             store.Open(OpenFlags.ReadOnly);
@@ -19,7 +19,7 @@ namespace Owin.JwtAuth
             {
                 return store.Certificates
                     .Find(X509FindType.FindBySubjectName, subjectName, validOnly: true)
-                    .Cast<X509Certificate2>().FirstOrDefault();
+                    .Cast<X509Certificate2>().ToArray();
             }
             finally
             {
