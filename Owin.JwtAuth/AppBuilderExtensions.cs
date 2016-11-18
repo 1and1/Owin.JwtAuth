@@ -15,13 +15,14 @@ namespace Owin.JwtAuth
         /// Enables JSON Web Token Authentication using configuration from <see cref="ConfigurationManager.AppSettings"/>.
         /// </summary>
         /// <param name="app">The application to configure.</param>
-        public static IAppBuilder UseJwtAuth(this IAppBuilder app)
+        /// <param name="suppressChallenge"><c>true</c> to prevent the <c>Bearer</c> challenge from being added to the <c>WWW-Authenticate</c> header.</param>
+        public static IAppBuilder UseJwtAuth(this IAppBuilder app, bool suppressChallenge = false)
         {
             string issuer = ConfigurationManager.AppSettings["JwtIssuer"];
             string audience = ConfigurationManager.AppSettings["JwtAudience"];
             return string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience)
                 ? app
-                : app.UseJwtAuth(issuer, audience);
+                : app.UseJwtAuth(issuer, audience, suppressChallenge);
         }
 
         /// <summary>
@@ -30,7 +31,8 @@ namespace Owin.JwtAuth
         /// <param name="app">The application to configure.</param>
         /// <param name="issuer">The name of the service allowed to issue JSON Web Tokens for access to this service. Also used to select the issuer certificate from the system certificate store.</param>
         /// <param name="audience">The name of this service as used as an audience name in JSON Web Tokens.</param>
-        public static IAppBuilder UseJwtAuth(this IAppBuilder app, string issuer, string audience)
+        /// <param name="suppressChallenge"><c>true</c> to prevent the <c>Bearer</c> challenge from being added to the <c>WWW-Authenticate</c> header.</param>
+        public static IAppBuilder UseJwtAuth(this IAppBuilder app, string issuer, string audience, bool suppressChallenge = false)
         {
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
@@ -45,7 +47,7 @@ namespace Owin.JwtAuth
                 return app;
             }
 
-            return app.UseJwtAuth(issuer, certificates, audience);
+            return app.UseJwtAuth(issuer, certificates, audience, suppressChallenge);
         }
 
         /// <summary>
@@ -55,14 +57,26 @@ namespace Owin.JwtAuth
         /// <param name="issuer">The name of the service allowed to issue JSON Web Tokens for access to this service.</param>
         /// <param name="certificates">The possible certificates used by the issuer to sign tokens.</param>
         /// <param name="audience">The name of this service as used as an audience name in JSON Web Tokens.</param>
-        public static IAppBuilder UseJwtAuth(this IAppBuilder app, string issuer, IEnumerable<X509Certificate2> certificates, string audience)
+        /// <param name="suppressChallenge"><c>true</c> to prevent the <c>Bearer</c> challenge from being added to the <c>WWW-Authenticate</c> header.</param>
+        public static IAppBuilder UseJwtAuth(this IAppBuilder app, string issuer, IEnumerable<X509Certificate2> certificates, string audience, bool suppressChallenge = false)
         {
-            return app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
+            app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
             {
                 AuthenticationMode = AuthenticationMode.Active,
                 AllowedAudiences = new[] {audience},
-                IssuerSecurityTokenProviders = certificates.Select(x => new X509CertificateSecurityTokenProvider(issuer, x))
+                IssuerSecurityTokenProviders =
+                    certificates.Select(x => new X509CertificateSecurityTokenProvider(issuer, x))
             });
+            if (suppressChallenge) app.UseAuthChallengeFilter(typesToRemove: "Bearer");
+            return app;
         }
+
+        /// <summary>
+        /// Removes a set of authentication types from challenges in <c>WWW-Authenticate</c> headers.
+        /// </summary>
+        /// <param name="app">The application to configure.</param>
+        /// <param name="typesToRemove">A list of authentication types to remove from challenges in <c>WWW-Authenticate</c> headers.</param>
+        public static IAppBuilder UseAuthChallengeFilter(this IAppBuilder app, params string[] typesToRemove) =>
+            app.Use<AuthChallengeFilterMiddleware>(new object[] {typesToRemove});
     }
 }

@@ -27,6 +27,10 @@ NuGet package:
 </configuration>
 ```
 
+Other overloads of `.UseJwtAuth()` allow you to specify the issuer, audience and certificate programmatically instead of via configuration.
+
+Setting the optional parameter `suppressChallenge = true` or using `app.UseAuthChallengeFilter("Bearer")` prevents the `Bearer` challenge from being added to the `WWW-Authenticate` header.
+This is useful in combination with `HttpListener`-based hosting which concatenates multiple authentication challenges in a single header. Most browsers do not handle the resulting headers (e.g. `WWW-Authenticate: Basic, Bearer`) properly.
 
 
 ## Certificate rollover

@@ -78,6 +78,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AppBuilderExtensions.cs" />
+    <Compile Include="AuthChallengeFilterMiddleware.cs" />
     <Compile Include="CertificateLoader.cs" />
   </ItemGroup>
   <ItemGroup>
