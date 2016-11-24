@@ -62,13 +62,21 @@ namespace Owin.JwtAuth
         {
             app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
             {
-                AuthenticationMode = suppressChallenge ? AuthenticationMode.Passive : AuthenticationMode.Active,
+                AuthenticationMode = AuthenticationMode.Active,
                 Realm = audience,
                 AllowedAudiences = new[] {audience},
-                IssuerSecurityTokenProviders =
-                    certificates.Select(x => new X509CertificateSecurityTokenProvider(issuer, x))
+                IssuerSecurityTokenProviders = certificates.Select(x => new X509CertificateSecurityTokenProvider(issuer, x))
             });
+            if (suppressChallenge) app.UseAuthChallengeFilter(typesToRemove: "Bearer");
             return app;
         }
+
+        /// <summary>
+        /// Removes a set of authentication types from challenges in <c>WWW-Authenticate</c> headers.
+        /// </summary>
+        /// <param name="app">The application to configure.</param>
+        /// <param name="typesToRemove">A list of authentication types to remove from challenges in <c>WWW-Authenticate</c> headers.</param>
+        public static IAppBuilder UseAuthChallengeFilter(this IAppBuilder app, params string[] typesToRemove) =>
+            app.Use<AuthChallengeFilterMiddleware>(new object[] {typesToRemove});
     }
 }
