@@ -63,7 +63,6 @@ namespace Owin.JwtAuth
             app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
             {
                 AuthenticationMode = AuthenticationMode.Active,
-                Realm = audience,
                 AllowedAudiences = new[] {audience},
                 IssuerSecurityTokenProviders = certificates.Select(x => new X509CertificateSecurityTokenProvider(issuer, x))
             });
