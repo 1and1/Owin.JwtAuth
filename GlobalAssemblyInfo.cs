@@ -7,5 +7,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("Owin.JwtAuth")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("0.5.0.0")]
+[assembly: AssemblyVersion("0.6.0.0")]
 [assembly: ComVisible(false)]
