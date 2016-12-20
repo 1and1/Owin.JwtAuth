@@ -29,9 +29,12 @@ namespace Owin.JwtAuth
             context.Response.OnSendingHeaders(x =>
             {
                 var response = (IOwinResponse)x;
-                response.Headers["WWW-Authenticate"] = string.Join(", ",
-                    response.Headers["WWW-Authenticate"].Split(new[] {", "}, StringSplitOptions.None)
-                        .Except(_typesToRemove));
+                if (response.Headers.ContainsKey("WWW-Authenticate"))
+                {
+                    response.Headers["WWW-Authenticate"] = string.Join(", ",
+                        response.Headers["WWW-Authenticate"].Split(new[] {", "}, StringSplitOptions.None)
+                            .Except(_typesToRemove));
+                }
             }, context.Response);
         }
     }
