@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 
@@ -28,14 +27,11 @@ namespace Owin.JwtAuth
 
             context.Response.OnSendingHeaders(x =>
             {
-                var response = (IOwinResponse)x;
-                if (response.Headers.ContainsKey("WWW-Authenticate"))
-                {
-                    response.Headers["WWW-Authenticate"] = string.Join(", ",
-                        response.Headers["WWW-Authenticate"].Split(new[] {", "}, StringSplitOptions.None)
-                            .Except(_typesToRemove));
-                }
-            }, context.Response);
+                var headers = (IHeaderDictionary)x;
+                var challenges = headers.GetCommaSeparatedValues("WWW-Authenticate");
+                if (challenges != null)
+                    headers.SetCommaSeparatedValues("WWW-Authenticate", challenges.Except(_typesToRemove).ToArray());
+            }, context.Response.Headers);
         }
     }
 }
